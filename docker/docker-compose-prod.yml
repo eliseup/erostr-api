@@ -1,0 +1,109 @@
+name: erostr
+
+services:
+  app:
+    image: erostr-app:latest
+    command: ["supervisor_starter.sh", "app"]
+    hostname: "app"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        com.erostr.project: "Easy Rostr"
+        com.erostr.service: "app"
+    depends_on:
+      - mysql
+      - redis
+      - rabbitmq
+    volumes:
+      - logs:/usr/src/logs
+    networks:
+      - net-bridge
+    ports:
+      - "8088:8000"
+    env_file:
+      - ${PWD}/src/.env_prod
+
+  celery_worker:
+    command: celery -A erostr_api worker -Q celery --loglevel=info
+    image: erostr-app:latest
+    hostname: "celery_worker"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        com.erostr.project: "Easy Rostr"
+        com.erostr.service: "celery worker"
+    depends_on:
+      - mysql
+      - redis
+      - rabbitmq
+    volumes:
+      - logs:/usr/src/logs
+    networks:
+      - net-bridge
+    env_file:
+      - ${PWD}/src/.env_prod
+
+  mysql:
+    image: erostr-mysql:latest
+    hostname: "mysql"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        com.erostr.project: "Easy Rostr"
+        com.erostr.service: "mysql"
+    volumes:
+      - mysql-db:/var/lib/mysql
+    networks:
+      - net-bridge
+    ports:
+      - "3308:3306"
+    env_file:
+      - ${PWD}/src/.env_prod
+
+  rabbitmq:
+    image: erostr-rabbitmq:latest
+    hostname: "rabbitmq"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        br.com.erostr.project: "Easy Rostr"
+        br.com.erostr.service: "rabbitmq"
+    volumes:
+      - rabbitmq-db:/var/lib/rabbitmq
+    networks:
+      - net-bridge
+
+  redis:
+    image: erostr-redis:latest
+    hostname: "redis"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        com.erostr.project: "Easy Rostr"
+        com.erostr.service: "redis"
+    volumes:
+      - redis-db:/data
+    networks:
+      - net-bridge
+
+volumes:
+  logs:
+  mysql-db:
+  redis-db:
+  rabbitmq-db:
+
+networks:
+  net-bridge:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"

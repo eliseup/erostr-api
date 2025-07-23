@@ -1,0 +1,24 @@
+services:
+  app:
+    build:
+      context: ../
+      dockerfile: docker/prod/app/Dockerfile
+    image: erostr-app:latest
+
+  mysql:
+    build:
+      context: ../
+      dockerfile: docker/prod/mysql/Dockerfile
+    image: erostr-mysql:latest
+
+  rabbitmq:
+    build:
+      context: ../
+      dockerfile: docker/prod/rabbitmq/Dockerfile
+    image: erostr-rabbitmq:latest
+
+  redis:
+    build:
+      context: ../
+      dockerfile: docker/prod/redis/Dockerfile
+    image: erostr-redis:latest

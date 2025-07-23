@@ -1,0 +1,109 @@
+name: erostr-dev
+
+services:
+  app:
+    image: erostr-app-dev:latest
+    hostname: "app"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        com.erostr.project: "Easy Rostr"
+        com.erostr.service: "app"
+    depends_on:
+      - mysql
+      - redis
+      - rabbitmq
+    volumes:
+      - ${PWD}/src/app:/usr/src/app
+      - ${PWD}/src/logs:/usr/src/logs
+    networks:
+      - net-bridge
+    ports:
+      - "8010:8000"
+    env_file:
+      - ${PWD}/src/.env_dev
+
+  celery_worker:
+    command: celery -A erostr_api worker -Q celery --loglevel=info
+    image: erostr-app-dev:latest
+    hostname: "celery_worker"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        com.erostr.project: "Easy Rostr"
+        com.erostr.service: "celery worker"
+    depends_on:
+      - mysql
+      - redis
+      - rabbitmq
+    volumes:
+      - ${PWD}/src/app:/usr/src/app
+      - ${PWD}/src/logs:/usr/src/logs
+    networks:
+      - net-bridge
+    env_file:
+      - ${PWD}/src/.env_dev
+
+  mysql:
+    image: erostr-mysql-dev:latest
+    hostname: "mysql"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        com.erostr.project: "Easy Rostr"
+        com.erostr.service: "mysql"
+    volumes:
+      - mysql-db:/var/lib/mysql
+    networks:
+      - net-bridge
+    ports:
+      - "3307:3306"
+    env_file:
+      - ${PWD}/src/.env_dev
+        
+  rabbitmq:
+    image: erostr-rabbitmq-dev:latest
+    hostname: "rabbitmq"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        br.com.erostr.project: "Easy Rostr"
+        br.com.erostr.service: "rabbitmq"
+    volumes:
+      - rabbitmq-db:/var/lib/rabbitmq
+    networks:
+      - net-bridge
+
+  redis:
+    image: erostr-redis-dev:latest
+    hostname: "redis"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        com.erostr.project: "Easy Rostr"
+        com.erostr.service: "redis"
+    volumes:
+      - redis-db:/data
+    networks:
+      - net-bridge
+
+volumes:
+  mysql-db:
+  redis-db:
+  rabbitmq-db:
+
+networks:
+  net-bridge:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
