@@ -36,6 +36,8 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'corsheaders',
+
+    'shifts.apps.ShiftsConfig',
 ]
 
 MIDDLEWARE = [
