@@ -130,6 +130,13 @@ REST_FRAMEWORK = {
 }
 
 
+CELERY_BROKER_URL = 'amqp://rabbitmq:5672/'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/1'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+
+
 LOGGING_BASE_DIR = BASE_DIR.parent.parent
 
 LOGGING = {
@@ -154,7 +161,13 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'formatter': 'default',
             'filename': os.path.join(LOGGING_BASE_DIR, 'logs', 'django.log'),
-        }
+        },
+        'celery_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOGGING_BASE_DIR, 'logs', 'celery.log'),
+            'formatter': 'default',
+        },
     },
 
     'loggers': {
@@ -163,6 +176,18 @@ LOGGING = {
             'handlers': ['console', 'django_file'],
             'level': 'INFO',
             'propagate': True,
-        }
+        },
+        # Celery logger
+        'celery': {
+            'handlers': ['celery_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
     }
 }
+
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+]
+
+MEDIA_PRIVATE = 'media_private'
