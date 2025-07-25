@@ -65,9 +65,13 @@ class TimePunchFileListCreateView(generics.ListCreateAPIView):
 
 
 class TimePunchListView(generics.ListAPIView):
+    """
+    Lists all TimePunch instances.
+    Filters (employee_number, punch_date) can be applied from query_params.
+    """
     queryset = TimePunch.objects.all()
     serializer_class = TimePunchSerializer
-    filterset_fields = ['employee_number']
+    filterset_fields = ['employee_number', 'punch_date']
 
 
 class TimePunchGraphSeriesRetrieveView(generics.RetrieveAPIView):
