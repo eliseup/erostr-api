@@ -1,12 +1,15 @@
 from django.core.files.uploadedfile import TemporaryUploadedFile
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 from rest_framework import generics
-from rest_framework.exceptions import UnsupportedMediaType, ValidationError
+from rest_framework.exceptions import UnsupportedMediaType, ValidationError, NotFound
 from rest_framework.parsers import MultiPartParser
+from rest_framework.response import Response
 
 from shifts.helpers import generate_punch_file_code, persist_uploaded_punch_file
 from shifts.models import TimePunch, TimePunchFile
-from shifts.serializers import TimePunchSerializer, TimePunchFileSerializer
+from shifts.serializers import TimePunchSerializer, TimePunchFileSerializer, \
+    TimePunchGraphSeriesSerializer
 from shifts.tasks import task_handle_uploaded_punch_file
 
 
@@ -65,3 +68,27 @@ class TimePunchListView(generics.ListAPIView):
     queryset = TimePunch.objects.all()
     serializer_class = TimePunchSerializer
     filterset_fields = ['employee_number']
+
+
+class TimePunchGraphSeriesRetrieveView(generics.RetrieveAPIView):
+    serializer_class = TimePunchSerializer
+
+    def get(self, request, *args, **kwargs):
+        punch_date = self.request.query_params.get('punch_date')
+
+        if punch_date is not None:
+            try:
+                TimePunch.objects.filter(punch_date=punch_date).exists()
+            except DjangoValidationError:
+                raise NotFound(detail='Nothing was found.')
+
+            serializer = TimePunchGraphSeriesSerializer(
+                data={},
+                context={'punch_date': punch_date}
+            )
+
+            serializer.is_valid()
+
+            return Response(serializer.data)
+
+        raise NotFound(detail='Nothing was found.')
