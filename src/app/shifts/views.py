@@ -64,3 +64,4 @@ class TimePunchFileListCreateView(generics.ListCreateAPIView):
 class TimePunchListView(generics.ListAPIView):
     queryset = TimePunch.objects.all()
     serializer_class = TimePunchSerializer
+    filterset_fields = ['employee_number']

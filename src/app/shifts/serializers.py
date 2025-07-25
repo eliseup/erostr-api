@@ -6,10 +6,18 @@ from shifts.models import TimePunchFile, TimePunch
 class TimePunchFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = TimePunchFile
-        fields = ['id', 'name', 'code', 'fingerprint', 'punch_count', 'status']
+        fields = [
+            'id', 'created_at', 'updated_at', 'name', 'code',
+            'fingerprint', 'punch_count', 'status'
+        ]
 
 
 class TimePunchSerializer(serializers.ModelSerializer):
+    time_punch_file = serializers.SerializerMethodField()
+
+    def get_time_punch_file(self, obj):
+        return obj.time_punch_file.name
+
     class Meta:
         model = TimePunch
         fields = ['id', 'punch_date', 'punch_hour', 'employee_number', 'time_punch_file']

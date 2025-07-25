@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'django_filters',
     'corsheaders',
 
     'shifts.apps.ShiftsConfig',
@@ -121,9 +122,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': [
         'djangorestframework_camel_case.parser.CamelCaseJSONParser',
     ],
+
     'DEFAULT_RENDERER_CLASSES': [
         'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',  # For DRF browsable API
+    ],
+
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
     ],
 
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
